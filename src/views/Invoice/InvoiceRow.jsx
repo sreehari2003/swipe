@@ -1,14 +1,17 @@
-import { BiSolidPencil, BiTrash } from 'react-icons/bi';
-import { BsEyeFill } from 'react-icons/bs';
-import InvoiceModal from '../../components/InvoiceModal';
-import { deleteInvoice } from '../../redux/invoicesSlice';
-import { useDispatch } from 'react-redux';
-import { useState } from 'react';
-import {Button} from "react-bootstrap"
+import { BiSolidPencil, BiTrash } from "react-icons/bi";
+import { Button } from "react-bootstrap";
+import { BsEyeFill } from "react-icons/bs";
+import InvoiceModal from "../../components/InvoiceModal";
+import { deleteInvoice } from "../../redux/invoicesSlice";
+import { useDispatch } from "react-redux";
+import { useProducts } from "../../redux/hooks";
+import { useState } from "react";
+import { useMemo } from "react";
 
 export const InvoiceRow = ({ invoice, navigate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
+  const { getProductById } = useProducts();
 
   const handleDeleteClick = (invoiceId) => {
     dispatch(deleteInvoice(invoiceId));
@@ -27,6 +30,17 @@ export const InvoiceRow = ({ invoice, navigate }) => {
     setIsOpen(false);
   };
 
+  const items = useMemo(() => {
+    const data = invoice.items.map((el) => {
+      const res = getProductById(el.id);
+      return {
+        ...res,
+        itemQuantity: el.itemQuantity,
+      };
+    });
+
+    return data;
+  }, [invoice]);
   return (
     <tr>
       <td>{invoice.invoiceNumber}</td>
@@ -36,21 +50,21 @@ export const InvoiceRow = ({ invoice, navigate }) => {
         {invoice.currency}
         {invoice.total}
       </td>
-      <td style={{ width: '5%' }}>
+      <td style={{ width: "5%" }}>
         <Button variant="outline-primary" onClick={handleEditClick}>
           <div className="d-flex align-items-center justify-content-center gap-2">
             <BiSolidPencil />
           </div>
         </Button>
       </td>
-      <td style={{ width: '5%' }}>
+      <td style={{ width: "5%" }}>
         <Button variant="danger" onClick={() => handleDeleteClick(invoice.id)}>
           <div className="d-flex align-items-center justify-content-center gap-2">
             <BiTrash />
           </div>
         </Button>
       </td>
-      <td style={{ width: '5%' }}>
+      <td style={{ width: "5%" }}>
         <Button variant="secondary" onClick={openModal}>
           <div className="d-flex align-items-center justify-content-center gap-2">
             <BsEyeFill />
@@ -79,9 +93,9 @@ export const InvoiceRow = ({ invoice, navigate }) => {
           taxRate: invoice.taxRate,
           taxAmount: invoice.taxAmount,
           discountRate: invoice.discountRate,
-          discountAmount: invoice.discountAmount
+          discountAmount: invoice.discountAmount,
         }}
-        items={invoice.items}
+        items={items}
         currency={invoice.currency}
         subTotal={invoice.subTotal}
         taxAmount={invoice.taxAmount}

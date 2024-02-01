@@ -28,7 +28,7 @@ const invoicesSlice = createSlice({
     },
     deleteProduct: (state, action) => {
       const productId = action.payload;
-      state.products = state.products.filter((el) => el.id !== productId);
+      state.products = state.products.filter((el) => el.itemId !== productId);
     },
   },
 });
@@ -43,6 +43,10 @@ export const {
 
 export const selectInvoiceList = ({ invoices }) => {
   return invoices.invoices;
+};
+
+export const selectProductList = ({ invoices }) => {
+  return invoices.products;
 };
 
 export default invoicesSlice.reducer;

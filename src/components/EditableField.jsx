@@ -16,6 +16,7 @@ const EditableField = (props) => {
         </InputGroup.Text>
       )}
       <Form.Control
+        disabled={props.disabled ? props.disabled : false}
         className={props.cellData.textAlign}
         type={props.cellData.type}
         placeholder={props.cellData.placeholder}

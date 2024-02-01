@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { Button, Card, Col, Row, Table, Tabs, Tab } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useInvoiceListData } from '../redux/hooks';
+import { useInvoiceListData ,useProducts} from '../redux/hooks';
 import { EmptyInvoice } from '../views/Invoice/EmptyInvoice';
 import { InvoiceRow } from '../views/Invoice/InvoiceRow';
 import { EmptyProduct } from '../views/Products/EmptyProduct';
+import { ProductList } from '../views/Products/ProductList';
 
 const InvoiceList = () => {
   const { invoiceList, getOneInvoice } = useInvoiceListData();
+
+  const { products, productSize } = useProducts()
+
   const isListEmpty = invoiceList.length === 0;
   const [copyId, setCopyId] = useState('');
   const navigate = useNavigate();
@@ -77,7 +81,8 @@ const InvoiceList = () => {
           </Tab>
           <Tab eventKey="Products" title="Products">
             <Card className="d-flex p-3 p-md-4 my-3 my-md-4 ">
-              <EmptyProduct />
+              {productSize === 0 && <EmptyProduct />}
+              {productSize > 0 && <ProductList data={products}/>}
             </Card>
           </Tab>
         </Tabs>

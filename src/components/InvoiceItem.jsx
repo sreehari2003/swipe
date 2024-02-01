@@ -1,21 +1,15 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Table from 'react-bootstrap/Table';
-import Button from 'react-bootstrap/Button';
-import { BiTrash } from 'react-icons/bi';
-import EditableField from './EditableField';
+import "bootstrap/dist/css/bootstrap.min.css";
+import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
+import { BiTrash } from "react-icons/bi";
+import EditableField from "./EditableField";
+import Form from "react-bootstrap/Form";
+import { useProducts } from "../redux/hooks";
+import { useState } from "react";
+import { useEffect } from "react";
 
 const InvoiceItem = (props) => {
   const { onItemizedItemEdit, currency, onRowDel, items, onRowAdd } = props;
-
-  const itemTable = items.map((item) => (
-    <ItemRow
-      key={item.id}
-      item={item}
-      onDelEvent={onRowDel}
-      onItemizedItemEdit={onItemizedItemEdit}
-      currency={currency}
-    />
-  ));
 
   return (
     <div>
@@ -28,7 +22,17 @@ const InvoiceItem = (props) => {
             <th className="text-center">ACTION</th>
           </tr>
         </thead>
-        <tbody>{itemTable}</tbody>
+        <tbody>
+          {items.map((item,index) => (
+            <ItemRow
+              index={index}
+              item={item}
+              onDelEvent={onRowDel}
+              onItemizedItemEdit={onItemizedItemEdit}
+              currency={currency}
+            />
+          ))}
+        </tbody>
       </Table>
       <Button className="fw-bold" onClick={onRowAdd}>
         Add Item
@@ -38,66 +42,95 @@ const InvoiceItem = (props) => {
 };
 
 const ItemRow = (props) => {
+  const { products,getProductById } = useProducts();
+
+  useEffect(()=>{
+    // triggerd when edit mode is activated
+     if(props.item.id){
+      const data = getProductById(props.item.id);
+      setInfo(data)
+     }
+  },[props])
+
+  const [info,setInfo] = useState();
+  const [qty,setQty] = useState(1);
+
+
   const onDelEvent = () => {
-    props.onDelEvent(props.item);
+    props.onDelEvent(props.index);
   };
   return (
     <tr>
-      <td style={{ width: '100%' }}>
+      <td style={{ width: "100%" }}>
+        <Form.Select aria-label="Default select example" defaultValue={props?.item?.id} onChange={(e)=>{
+           props.onItemizedItemEdit({
+            id:e.target.value,
+           },props.index)
+           const data = getProductById(e.target?.value)
+           if(!data) return
+           setInfo(data)
+        }}>
+          <option value={-1}>Open this to select Item</option>
+          {products.map((el) => (
+            <option value={el.itemId}>{el.itemName}</option>
+          ))}
+        </Form.Select>
+
         <EditableField
-          onItemizedItemEdit={(evt) => props.onItemizedItemEdit(evt, props.item.itemId)}
+          disabled={true}
+          onItemizedItemEdit={() =>
+            props.onItemizedItemEdit(props.item.itemId)
+          }
           cellData={{
-            type: 'text',
-            name: 'itemName',
-            placeholder: 'Item name',
-            value: props.item.itemName,
-            id: props.item.itemId
-          }}
-        />
-        <EditableField
-          onItemizedItemEdit={(evt) => props.onItemizedItemEdit(evt, props.item.itemId)}
-          cellData={{
-            type: 'text',
-            name: 'itemDescription',
-            placeholder: 'Item description',
-            value: props.item.itemDescription,
-            id: props.item.itemId
+            type: "text",
+            name: "itemDescription",
+            placeholder: "Item description",
+            value: info?.itemDescription,
+            id: info?.itemId,
           }}
         />
       </td>
-      <td style={{ minWidth: '70px' }}>
+      <td style={{ minWidth: "70px" }}>
         <EditableField
-          onItemizedItemEdit={(evt) => props.onItemizedItemEdit(evt, props.item.itemId)}
+          onItemizedItemEdit={(evt) =>{   
+            setQty(evt.target.value)
+            props.onItemizedItemEdit({
+              qty:evt.target.value
+            }, props.index)
+          }}
           cellData={{
-            type: 'number',
-            name: 'itemQuantity',
+            type: "number",
+            name: "itemQuantity",
             min: 1,
-            step: '1',
-            value: props.item.itemQuantity,
-            id: props.item.itemId
+            step: "1",
+            value: qty,
+            id: props.item.itemId,
           }}
         />
       </td>
-      <td style={{ minWidth: '130px' }}>
+      <td style={{ minWidth: "130px" }}>
         <EditableField
-          onItemizedItemEdit={(evt) => props.onItemizedItemEdit(evt, props.item.itemId)}
+          onItemizedItemEdit={(evt) =>
+            props.onItemizedItemEdit(evt, props.item.itemId)
+          }
+          disabled
           cellData={{
             leading: props.currency,
-            type: 'number',
-            name: 'itemPrice',
+            type: "number",
+            name: "itemPrice",
             min: 1,
-            step: '0.01',
+            step: "0.01",
             presicion: 2,
-            textAlign: 'text-end',
-            value: props.item.itemPrice,
-            id: props.item.itemId
+            textAlign: "text-end",
+            value:info?.itemPrice,
+            id: props.item.itemId,
           }}
         />
       </td>
-      <td className="text-center" style={{ minWidth: '50px' }}>
+      <td className="text-center" style={{ minWidth: "50px" }}>
         <BiTrash
           onClick={onDelEvent}
-          style={{ height: '33px', width: '33px', padding: '7.5px' }}
+          style={{ height: "33px", width: "33px", padding: "7.5px" }}
           className="text-white mt-1 btn btn-danger"
         />
       </td>

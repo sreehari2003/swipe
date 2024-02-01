@@ -1,69 +1,62 @@
-import { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Card from 'react-bootstrap/Card';
-import InvoiceItem from './InvoiceItem';
-import InvoiceModal from './InvoiceModal';
-import { BiArrowBack } from 'react-icons/bi';
-import InputGroup from 'react-bootstrap/InputGroup';
-import { useDispatch } from 'react-redux';
-import { addInvoice, updateInvoice } from '../redux/invoicesSlice';
-import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
-import generateRandomId from '../utils/generateRandomId';
-import { useInvoiceListData } from '../redux/hooks';
+import { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Card from "react-bootstrap/Card";
+import InvoiceItem from "./InvoiceItem";
+import InvoiceModal from "./InvoiceModal";
+import { BiArrowBack } from "react-icons/bi";
+import InputGroup from "react-bootstrap/InputGroup";
+import { useDispatch } from "react-redux";
+import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import generateRandomId from "../utils/generateRandomId";
+import { useInvoiceListData, useProducts } from "../redux/hooks";
+import { useMemo } from "react";
 
 const InvoiceForm = () => {
   const dispatch = useDispatch();
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const isCopy = location.pathname.includes('create');
-  const isEdit = location.pathname.includes('edit');
+  const isCopy = location.pathname.includes("create");
+  const isEdit = location.pathname.includes("edit");
 
   const [isOpen, setIsOpen] = useState(false);
-  const [copyId, setCopyId] = useState('');
+  const [copyId, setCopyId] = useState("");
   const { getOneInvoice, listSize } = useInvoiceListData();
   const [formData, setFormData] = useState(
     isEdit
       ? getOneInvoice(params.id)
       : isCopy && params.id
-        ? {
-            ...getOneInvoice(params.id),
-            id: generateRandomId(),
-            invoiceNumber: listSize + 1
-          }
-        : {
-            id: generateRandomId(),
-            currentDate: new Date().toLocaleDateString(),
-            invoiceNumber: listSize + 1,
-            dateOfIssue: '',
-            billTo: '',
-            billToEmail: '',
-            billToAddress: '',
-            billFrom: '',
-            billFromEmail: '',
-            billFromAddress: '',
-            notes: '',
-            total: '0.00',
-            subTotal: '0.00',
-            taxRate: '',
-            taxAmount: '0.00',
-            discountRate: '',
-            discountAmount: '0.00',
-            currency: '$',
-            items: [
-              {
-                itemId: 0,
-                itemName: '',
-                itemDescription: '',
-                itemPrice: '1.00',
-                itemQuantity: 1
-              }
-            ]
-          }
+      ? {
+          ...getOneInvoice(params.id),
+          id: generateRandomId(),
+          invoiceNumber: listSize + 1,
+        }
+      : {
+          id: generateRandomId(),
+          currentDate: new Date().toLocaleDateString(),
+          invoiceNumber: listSize + 1,
+          dateOfIssue: "",
+          billTo: "",
+          billToEmail: "",
+          billToAddress: "",
+          billFrom: "",
+          billFromEmail: "",
+          billFromAddress: "",
+          notes: "",
+          total: "0.00",
+          subTotal: "0.00",
+          taxRate: "",
+          taxAmount: "0.00",
+          discountRate: "",
+          discountAmount: "0.00",
+          currency: "$",
+          items: [],
+        }
   );
 
   useEffect(() => {
@@ -71,23 +64,22 @@ const InvoiceForm = () => {
   }, []);
 
   const handleRowDel = (itemToDelete) => {
-    const updatedItems = formData.items.filter((item) => item.itemId !== itemToDelete.itemId);
+    const updatedItems = formData.items.filter(
+      (_,index) => index !== itemToDelete
+    );
     setFormData({ ...formData, items: updatedItems });
     handleCalculateTotal();
   };
+  const { getProductById } = useProducts();
 
   const handleAddEvent = () => {
-    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
     const newItem = {
-      itemId: id,
-      itemName: '',
-      itemDescription: '',
-      itemPrice: '1.00',
-      itemQuantity: 1
+      id: 0,
+      itemQuantity: 1,
     };
     setFormData({
       ...formData,
-      items: [...formData.items, newItem]
+      items: [...formData.items, newItem],
     });
     handleCalculateTotal();
   };
@@ -97,32 +89,59 @@ const InvoiceForm = () => {
       let subTotal = 0;
 
       prevFormData.items.forEach((item) => {
-        subTotal += parseFloat(item.itemPrice).toFixed(2) * parseInt(item.itemQuantity);
+        let itemPrice = 0;
+        const data = getProductById(item.id);
+        
+
+        // when items is zero  store wont have any item to compute the price
+        if(data){
+          itemPrice = data.itemPrice;
+        }
+
+        subTotal +=
+          parseFloat(itemPrice).toFixed(2) * parseInt(item.itemQuantity);
       });
 
-      const taxAmount = parseFloat(subTotal * (prevFormData.taxRate / 100)).toFixed(2);
-      const discountAmount = parseFloat(subTotal * (prevFormData.discountRate / 100)).toFixed(2);
-      const total = (subTotal - parseFloat(discountAmount) + parseFloat(taxAmount)).toFixed(2);
+      const taxAmount = parseFloat(
+        subTotal * (prevFormData.taxRate / 100)
+      ).toFixed(2);
+      const discountAmount = parseFloat(
+        subTotal * (prevFormData.discountRate / 100)
+      ).toFixed(2);
+      const total = (
+        subTotal -
+        parseFloat(discountAmount) +
+        parseFloat(taxAmount)
+      ).toFixed(2);
 
       return {
         ...prevFormData,
         subTotal: parseFloat(subTotal).toFixed(2),
         taxAmount,
         discountAmount,
-        total
+        total,
       };
     });
   };
 
-  const onItemizedItemEdit = (evt, id) => {
-    const updatedItems = formData.items.map((oldItem) => {
-      if (oldItem.itemId === id) {
-        return { ...oldItem, [evt.target.name]: evt.target.value };
-      }
-      return oldItem;
-    });
+  const onItemizedItemEdit = (newData, index) => {
+    // prevent computing on default input select
+    if (newData?.id === "-1") return;
 
-    setFormData({ ...formData, items: updatedItems });
+    setFormData((prevFormData) => {
+      const updatedItems = prevFormData.items.map((oldItem, order) => {
+        if (order === index) {
+          return {
+            id: newData?.id ? Number(newData.id) : oldItem.id,
+            itemQuantity: newData.qty
+              ? Number(newData.qty)
+              : oldItem.itemQuantity,
+          };
+        }
+        return oldItem;
+      });
+      return { ...prevFormData, items: updatedItems };
+    });
     handleCalculateTotal();
   };
 
@@ -148,15 +167,15 @@ const InvoiceForm = () => {
   const handleAddInvoice = () => {
     if (isEdit) {
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
-      alert('Invoice updated successfuly 🥳');
+      alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
       dispatch(addInvoice({ id: generateRandomId(), ...formData }));
-      alert('Invoice added successfuly 🥳');
+      alert("Invoice added successfuly 🥳");
     } else {
       dispatch(addInvoice(formData));
-      alert('Invoice added successfuly 🥳');
+      alert("Invoice added successfuly 🥳");
     }
-    navigate('/');
+    navigate("/");
   };
 
   const handleCopyInvoice = () => {
@@ -165,12 +184,25 @@ const InvoiceForm = () => {
       setFormData({
         ...recievedInvoice,
         id: formData.id,
-        invoiceNumber: formData.invoiceNumber
+        invoiceNumber: formData.invoiceNumber,
       });
     } else {
-      alert('Invoice does not exists!!!!!');
+      alert("Invoice does not exists!!!!!");
     }
   };
+
+
+  const items = useMemo(()=>{
+       const data = formData.items.map(el=>{
+          const res  = getProductById(el.id)
+          return {
+            ...res,
+            itemQuantity:el.itemQuantity
+          }
+       })
+
+       return data
+  },[formData])
 
   return (
     <Form onSubmit={openModal}>
@@ -201,7 +233,7 @@ const InvoiceForm = () => {
                     value={formData.dateOfIssue}
                     name="dateOfIssue"
                     onChange={(e) => editField(e.target.name, e.target.value)}
-                    style={{ maxWidth: '150px' }}
+                    style={{ maxWidth: "150px" }}
                     required
                   />
                 </div>
@@ -214,7 +246,7 @@ const InvoiceForm = () => {
                   name="invoiceNumber"
                   onChange={(e) => editField(e.target.name, e.target.value)}
                   min="1"
-                  style={{ maxWidth: '70px' }}
+                  style={{ maxWidth: "70px" }}
                   required
                 />
               </div>
@@ -234,6 +266,7 @@ const InvoiceForm = () => {
                   autoComplete="name"
                   required
                 />
+
                 <Form.Control
                   placeholder="Email address"
                   value={formData.billToEmail}
@@ -309,7 +342,9 @@ const InvoiceForm = () => {
                 <div className="d-flex flex-row align-items-start justify-content-between mt-2">
                   <span className="fw-bold">Discount:</span>
                   <span>
-                    <span className="small">({formData.discountRate || 0}%)</span>
+                    <span className="small">
+                      ({formData.discountRate || 0}%)
+                    </span>
                     {formData.currency}
                     {formData.discountAmount || 0}
                   </span>
@@ -325,7 +360,7 @@ const InvoiceForm = () => {
                 <hr />
                 <div
                   className="d-flex flex-row align-items-start justify-content-between"
-                  style={{ fontSize: '1.125rem' }}
+                  style={{ fontSize: "1.125rem" }}
                 >
                   <span className="fw-bold">Total:</span>
                   <span className="fw-bold">
@@ -350,8 +385,12 @@ const InvoiceForm = () => {
         </Col>
         <Col md={4} lg={3}>
           <div className="sticky-top pt-md-3 pt-xl-4">
-            <Button variant="dark" onClick={handleAddInvoice} className="d-block w-100 mb-2">
-              {isEdit ? 'Update Invoice' : 'Add Invoice'}
+            <Button
+              variant="dark"
+              onClick={handleAddInvoice}
+              className="d-block w-100 mb-2"
+            >
+              {isEdit ? "Update Invoice" : "Add Invoice"}
             </Button>
             <Button variant="primary" type="submit" className="d-block w-100">
               Review Invoice
@@ -378,9 +417,9 @@ const InvoiceForm = () => {
                 taxRate: formData.taxRate,
                 taxAmount: formData.taxAmount,
                 discountRate: formData.discountRate,
-                discountAmount: formData.discountAmount
+                discountAmount: formData.discountAmount,
               }}
-              items={formData.items}
+              items={items}
               currency={formData.currency}
               subTotal={formData.subTotal}
               taxAmount={formData.taxAmount}
@@ -390,7 +429,9 @@ const InvoiceForm = () => {
             <Form.Group className="mb-3">
               <Form.Label className="fw-bold">Currency:</Form.Label>
               <Form.Select
-                onChange={(event) => onCurrencyChange({ currency: event.target.value })}
+                onChange={(event) =>
+                  onCurrencyChange({ currency: event.target.value })
+                }
                 className="btn btn-light my-1"
                 aria-label="Change Currency"
               >
@@ -451,7 +492,11 @@ const InvoiceForm = () => {
               type="text"
               className="my-2 bg-white border"
             />
-            <Button variant="primary" onClick={handleCopyInvoice} className="d-block">
+            <Button
+              variant="primary"
+              onClick={handleCopyInvoice}
+              className="d-block"
+            >
               Copy Old Invoice
             </Button>
           </div>
