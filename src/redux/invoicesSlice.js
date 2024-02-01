@@ -1,26 +1,48 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const invoicesSlice = createSlice({
-  name: 'invoices',
-  initialState: [],
+  name: "invoices",
+  initialState: {
+    invoices: [],
+    products: [],
+  },
   reducers: {
     addInvoice: (state, action) => {
-      state.push(action.payload);
+      state.invoices.push(action.payload);
     },
     deleteInvoice: (state, action) => {
-      return state.filter((invoice) => invoice.id !== action.payload);
+      const invoiceIdToDelete = action.payload;
+      state.invoices = state.invoices.filter(
+        (invoice) => invoice.id !== invoiceIdToDelete
+      );
     },
     updateInvoice: (state, action) => {
-      const index = state.findIndex((invoice) => invoice.id === action.payload.id);
+      const { id, updatedInvoice } = action.payload;
+      const index = state.invoices.findIndex((invoice) => invoice.id === id);
       if (index !== -1) {
-        state[index] = action.payload.updatedInvoice;
+        state.invoices[index] = updatedInvoice;
       }
-    }
-  }
+    },
+    addProduct: (state, action) => {
+      state.products.push(action.payload);
+    },
+    deleteProduct: (state, action) => {
+      const productId = action.payload;
+      state.products = state.products.filter((el) => el.id !== productId);
+    },
+  },
 });
 
-export const { addInvoice, deleteInvoice, updateInvoice } = invoicesSlice.actions;
+export const {
+  addInvoice,
+  deleteInvoice,
+  updateInvoice,
+  addProduct,
+  deleteProduct,
+} = invoicesSlice.actions;
 
-export const selectInvoiceList = (state) => state.invoices;
+export const selectInvoiceList = ({ invoices }) => {
+  return invoices.invoices;
+};
 
 export default invoicesSlice.reducer;
