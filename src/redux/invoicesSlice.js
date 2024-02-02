@@ -30,6 +30,13 @@ const invoicesSlice = createSlice({
       const productId = action.payload;
       state.products = state.products.filter((el) => el.itemId !== productId);
     },
+    updateProduct: (state, payload) => {
+      const { id, updatedProduct } = payload.payload;
+      const data = state.products.findIndex((el) => el.itemId === id);
+      if (data !== -1) {
+        state.products[data] = updatedProduct;
+      }
+    },
   },
 });
 
@@ -39,6 +46,7 @@ export const {
   updateInvoice,
   addProduct,
   deleteProduct,
+  updateProduct,
 } = invoicesSlice.actions;
 
 export const selectInvoiceList = ({ invoices }) => {

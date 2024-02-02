@@ -113,7 +113,6 @@ const InvoiceForm = () => {
         parseFloat(discountAmount) +
         parseFloat(taxAmount)
       ).toFixed(2);
-
       return {
         ...prevFormData,
         subTotal: parseFloat(subTotal).toFixed(2),
@@ -165,6 +164,10 @@ const InvoiceForm = () => {
   };
 
   const handleAddInvoice = () => {
+    if(!formData.items.length){
+      alert("Please add atleast one item")
+      return;
+    }
     if (isEdit) {
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
       alert("Invoice updated successfuly 🥳");
@@ -172,6 +175,7 @@ const InvoiceForm = () => {
       dispatch(addInvoice({ id: generateRandomId(), ...formData }));
       alert("Invoice added successfuly 🥳");
     } else {
+     
       dispatch(addInvoice(formData));
       alert("Invoice added successfuly 🥳");
     }

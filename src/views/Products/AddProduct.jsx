@@ -5,16 +5,15 @@ import Col from "react-bootstrap/Col";
 import { useState } from "react";
 import generateRandomId from "../../utils/generateRandomId";
 import { useDispatch } from "react-redux";
-import { addProduct } from "../../redux/invoicesSlice";
+import { addProduct, updateProduct } from "../../redux/invoicesSlice";
 
-export const AddProduct = ({ show, onHide }) => {
-
+export const AddProduct = ({ show, onHide, defaultValue }) => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
-    itemId: 0,
-    itemName: "",
-    itemDescription: "",
-    itemPrice: "1.00",
+    itemId: defaultValue?.itemId || 0,
+    itemName: defaultValue?.itemName || "",
+    itemDescription: defaultValue?.itemDescription || "",
+    itemPrice: defaultValue?.itemPrice || "1.00",
     itemQuantity: 1,
   });
 
@@ -28,9 +27,22 @@ export const AddProduct = ({ show, onHide }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    formData.itemId = generateRandomId()
-    dispatch(addProduct(formData))
-    window.alert("New product added successfuly")
+    // when new product is added;
+    if (!defaultValue) {
+      formData.itemId = generateRandomId();
+      dispatch(addProduct(formData));
+      window.alert("New product added successfuly");
+    } else {
+      // when we update the product
+      dispatch(
+        updateProduct({
+          id: formData.itemId,
+          updatedProduct: formData,
+        })
+      );
+      window.alert("Product updated successfuly");
+    }
+   
   };
 
   return (
@@ -85,7 +97,9 @@ export const AddProduct = ({ show, onHide }) => {
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={onHide} type="submit">Add Product</Button>
+          <Button onClick={onHide} type="submit">
+            Add Product
+          </Button>
         </Modal.Footer>
       </Form>
     </Modal>

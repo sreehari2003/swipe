@@ -26,6 +26,7 @@ const GenerateInvoice = () => {
 };
 
 const InvoiceModal = (props) => {
+  console.log(props)
   return (
     <div>
       <Modal show={props.showModal} onHide={props.closeModal} size="lg" centered>
@@ -106,7 +107,7 @@ const InvoiceModal = (props) => {
                     TAX
                   </td>
                   <td className="text-end" style={{ width: '100px' }}>
-                    {props.currency} {props.taxAmmount}
+                    {props.currency} {props.info.taxAmount}
                   </td>
                 </tr>
                 {props.discountAmmount !== 0.0 && (
@@ -116,7 +117,7 @@ const InvoiceModal = (props) => {
                       DISCOUNT
                     </td>
                     <td className="text-end" style={{ width: '100px' }}>
-                      {props.currency} {props.discountAmmount}
+                      {props.currency} {props.discountAmount}
                     </td>
                   </tr>
                 )}

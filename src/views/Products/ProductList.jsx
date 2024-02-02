@@ -25,6 +25,7 @@ export const ProductList = ({ data }) => {
         <tbody>
           {data.map((el) => (
             <Product
+              key={el.itemId}
               itemDescription={el.itemDescription}
               itemId={el.itemId}
               itemName={el.itemName}
