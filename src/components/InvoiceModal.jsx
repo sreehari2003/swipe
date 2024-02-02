@@ -32,13 +32,14 @@ const InvoiceModal = (props) => {
 
       if (!acc[group]) {
         acc[group] = {
-          items:[],
-          totalCost:0
+          items: [],
+          totalCost: 0,
         };
       }
 
       acc[group].items.push(currentItem);
-      acc[group].totalCost += parseFloat(currentItem.itemPrice) * currentItem.itemQuantity
+      acc[group].totalCost +=
+        parseFloat(currentItem.itemPrice) * currentItem.itemQuantity;
       return acc;
     }, {});
   };
@@ -95,41 +96,47 @@ const InvoiceModal = (props) => {
               </Col>
             </Row>
 
-            {Object.entries(groupedItems).map(([group, {items,totalCost}]) => (
-              <div key={group}>
-                <h2>{group}</h2>
-                <Table className="mb-0">
-                  <thead>
-                    <tr>
-                      <th>QTY</th>
-                      <th>DESCRIPTION</th>
-                      <th className="text-end">PRICE</th>
-                      <th className="text-end">AMOUNT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, i) => (
-                      <tr key={i}>
-                        <td style={{ width: "70px" }}>{item.itemQuantity}</td>
-                        <td>
-                          {item.itemName} - {item.itemDescription}
-                        </td>
-                        <td className="text-end" style={{ width: "100px" }}>
-                          {props.currency} {item.itemPrice}
-                        </td>
-                        <td className="text-end" style={{ width: "100px" }}>
-                          {props.currency} {item.itemPrice * item.itemQuantity}
-                        </td>
+            {Object.entries(groupedItems).map(
+              ([group, { items, totalCost }]) => (
+                <div key={group}>
+                  {group !== "null" && <h2>{group}</h2>}
+
+                  <Table className="mb-0">
+                    <thead>
+                      <tr>
+                        <th>QTY</th>
+                        <th>DESCRIPTION</th>
+                        <th className="text-end">PRICE</th>
+                        <th className="text-end">AMOUNT</th>
                       </tr>
-                    ))}
-                    
-                  </tbody>
-                </Table>
-                <div className="text-end mt-2">
-             <strong>Total Cost:</strong> {props.currency} {totalCost.toFixed(2)}
-          </div>
-              </div>
-            ))}
+                    </thead>
+                    <tbody>
+                      {items.map((item, i) => (
+                        <tr key={i}>
+                          <td style={{ width: "70px" }}>{item.itemQuantity}</td>
+                          <td>
+                            {item.itemName} - {item.itemDescription}
+                          </td>
+                          <td className="text-end" style={{ width: "100px" }}>
+                            {props.currency} {item.itemPrice}
+                          </td>
+                          <td className="text-end" style={{ width: "100px" }}>
+                            {props.currency}{" "}
+                            {item.itemPrice * item.itemQuantity}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                  {group !== "null" && (
+                    <div className="text-end mt-2">
+                      <strong>Total Cost:</strong> {props.currency}{" "}
+                      {totalCost.toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              )
+            )}
             <Table>
               <tbody>
                 <tr>

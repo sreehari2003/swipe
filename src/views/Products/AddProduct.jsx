@@ -5,7 +5,7 @@ import Col from "react-bootstrap/Col";
 import { useState } from "react";
 import generateRandomId from "../../utils/generateRandomId";
 import { useDispatch } from "react-redux";
-import { addProduct, updateProduct } from "../../redux/invoicesSlice";
+import { addProduct, updateProductAndRecalculateTotal } from "../../redux/invoicesSlice";
 
 export const AddProduct = ({ show, onHide, defaultValue }) => {
   const dispatch = useDispatch();
@@ -34,12 +34,11 @@ export const AddProduct = ({ show, onHide, defaultValue }) => {
       window.alert("New product added successfuly");
     } else {
       // when we update the product
-      dispatch(
-        updateProduct({
-          id: formData.itemId,
-          updatedProduct: formData,
-        })
-      );
+      dispatch(updateProductAndRecalculateTotal({
+        id: formData.itemId,
+        updatedProduct: formData,
+      }));
+
       window.alert("Product updated successfuly");
     }
    
@@ -89,6 +88,7 @@ export const AddProduct = ({ show, onHide, defaultValue }) => {
             <Form.Control
               required
               type="number"
+              min={1}
               name="itemPrice"
               onChange={handleInputChange}
               value={formData.itemPrice}

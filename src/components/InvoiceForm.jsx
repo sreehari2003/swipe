@@ -60,6 +60,7 @@ const InvoiceForm = () => {
   );
 
 
+  const { getProductById,products } = useProducts();
 
   useEffect(() => {
     handleCalculateTotal();
@@ -72,7 +73,6 @@ const InvoiceForm = () => {
     setFormData({ ...formData, items: updatedItems });
     handleCalculateTotal();
   };
-  const { getProductById } = useProducts();
 
   const handleAddEvent = () => {
     const newItem = {

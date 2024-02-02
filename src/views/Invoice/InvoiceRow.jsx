@@ -36,11 +36,14 @@ export const InvoiceRow = ({ invoice, navigate }) => {
       return {
         ...res,
         itemQuantity: el.itemQuantity,
+        group:el.group
       };
     });
 
     return data;
   }, [invoice]);
+
+
   return (
     <tr>
       <td>{invoice.invoiceNumber}</td>
