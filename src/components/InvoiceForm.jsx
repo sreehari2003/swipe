@@ -59,13 +59,15 @@ const InvoiceForm = () => {
         }
   );
 
+
+
   useEffect(() => {
     handleCalculateTotal();
   }, []);
 
   const handleRowDel = (itemToDelete) => {
     const updatedItems = formData.items.filter(
-      (_,index) => index !== itemToDelete
+      (_, index) => index !== itemToDelete
     );
     setFormData({ ...formData, items: updatedItems });
     handleCalculateTotal();
@@ -76,6 +78,7 @@ const InvoiceForm = () => {
     const newItem = {
       id: 0,
       itemQuantity: 1,
+      group: null,
     };
     setFormData({
       ...formData,
@@ -91,10 +94,9 @@ const InvoiceForm = () => {
       prevFormData.items.forEach((item) => {
         let itemPrice = 0;
         const data = getProductById(item.id);
-        
 
         // when items is zero  store wont have any item to compute the price
-        if(data){
+        if (data) {
           itemPrice = data.itemPrice;
         }
 
@@ -135,6 +137,7 @@ const InvoiceForm = () => {
             itemQuantity: newData.qty
               ? Number(newData.qty)
               : oldItem.itemQuantity,
+            group: newData.group ? newData.group : oldItem.group,
           };
         }
         return oldItem;
@@ -164,8 +167,8 @@ const InvoiceForm = () => {
   };
 
   const handleAddInvoice = () => {
-    if(!formData.items.length){
-      alert("Please add atleast one item")
+    if (!formData.items.length) {
+      alert("Please add atleast one item");
       return;
     }
     if (isEdit) {
@@ -175,7 +178,6 @@ const InvoiceForm = () => {
       dispatch(addInvoice({ id: generateRandomId(), ...formData }));
       alert("Invoice added successfuly 🥳");
     } else {
-     
       dispatch(addInvoice(formData));
       alert("Invoice added successfuly 🥳");
     }
@@ -195,18 +197,19 @@ const InvoiceForm = () => {
     }
   };
 
+  const items = useMemo(() => {
+    const data = formData.items.map((el) => {
+      const res = getProductById(el.id);
+      return {
+        ...res,
+        itemQuantity: el.itemQuantity,
+        group:el.group
 
-  const items = useMemo(()=>{
-       const data = formData.items.map(el=>{
-          const res  = getProductById(el.id)
-          return {
-            ...res,
-            itemQuantity:el.itemQuantity
-          }
-       })
+      };
+    });
 
-       return data
-  },[formData])
+    return data;
+  }, [formData]);
 
   return (
     <Form onSubmit={openModal}>

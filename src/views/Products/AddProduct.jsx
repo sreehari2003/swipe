@@ -72,7 +72,7 @@ export const AddProduct = ({ show, onHide, defaultValue }) => {
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
-          <Form.Group as={Col} controlId="validationCustom02">
+          <Form.Group as={Col} controlId="validationCustom02" className="mt-3">
             <Form.Label>Description</Form.Label>
             <Form.Control
               required
@@ -84,7 +84,7 @@ export const AddProduct = ({ show, onHide, defaultValue }) => {
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
-          <Form.Group as={Col} controlId="validationCustom02">
+          <Form.Group as={Col} controlId="validationCustom02" className="mt-3">
             <Form.Label>Price</Form.Label>
             <Form.Control
               required
@@ -98,7 +98,7 @@ export const AddProduct = ({ show, onHide, defaultValue }) => {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={onHide} type="submit">
-            Add Product
+            {defaultValue ? "Update product" : "Add Product"}
           </Button>
         </Modal.Footer>
       </Form>
